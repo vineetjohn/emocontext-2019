@@ -1,10 +1,8 @@
 import sys
 import logging
 import argparse
-
-
 from src.config import global_config
-from src.utils import log_helper
+from src.utils import log_helper, data_processor
 from src.enums.mode import Mode
 
 LOG = logging.getLogger()
@@ -29,6 +27,11 @@ def main(args):
 
     LOG.debug("Options: {}".format(options))
     LOG.info("Running model in {} mode".format(options.mode))
+
+    train_iterator = data_processor.read_data(options.train_file_path)
+
+    for i, train_data in enumerate(train_iterator):
+        LOG.debug("Processing iteration {}".format(i))
 
 
 if __name__ == "__main__":
