@@ -14,8 +14,8 @@ pylint==2.1.1
 requests==2.19.1
 six==1.11.0
 toml==0.9.6
-torch==0.4.1.post2
-torchtext==0.2.3
+torch==1.0.0
+torchtext==0.3.1
 tqdm==4.26.0
 urllib3==1.23
 wrapt==1.10.11
