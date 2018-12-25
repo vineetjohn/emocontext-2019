@@ -19,6 +19,9 @@ class EmotionClassifier(torch.nn.Module):
             dropout=(0 if layer_count == 1 else dropout),
             bidirectional=True,
         )
+        self.lin_1 = torch.nn.Linear(mconf.gru_hidden_dim * 2, num_labels, bias=True)
+        self.softmax = torch.nn.LogSoftmax()
+        self.loss = torch.nn.NLLLoss()
 
     def forward(self, input_seq, input_lengths, hidden=None):
         # Convert word indexes to embeddings
@@ -28,16 +31,16 @@ class EmotionClassifier(torch.nn.Module):
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
 
         # Forward pass through GRU
-        outputs, hidden = self.gru(packed, hidden)
+        _, hidden = self.gru(packed, hidden)
 
-        # Unpack padding
-        outputs, _ = torch.nn.utils.rnn.pad_packed_sequence(outputs)
+        # Concatenate forward and backward hidden unit of the GRU
+        encoded_sentence = torch.cat(tensors=(hidden[0, :, :], hidden[1, :, :]), dim=1)
 
-        # Sum bidirectional GRU outputs
-        outputs = (
-            outputs[:, :, : mconf.gru_hidden_dim]
-            + outputs[:, :, mconf.gru_hidden_dim :]
-        )
+        # Project hidden layer into a (num-labels)-sized vector
+        unscaled_logits = self.lin_1(encoded_sentence)
+
+        # Compute softmax over the labels
+        probabilities = self.softmax(unscaled_logits)
 
         # Return output and final hidden state
-        return outputs, hidden
+        return probabilities
