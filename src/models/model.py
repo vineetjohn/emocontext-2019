@@ -13,7 +13,7 @@ class EmotionClassifier(torch.nn.Module):
         # Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'
         #   because our input size is a word embedding with number of features == hidden_size
         self.gru = torch.nn.GRU(
-            gconf.word_embedding_size,
+            gconf.WORD_EMBEDDING_SIZE,
             mconf.gru_hidden_dim,
             layer_count,
             dropout=(0 if layer_count == 1 else dropout),

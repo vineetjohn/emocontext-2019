@@ -1,9 +1,9 @@
 import logging
 from torchtext import data
-from src.config import global_config
+from src.config import global_config as gconf
 from src.config.model_config import mconf
 
-LOG = logging.getLogger(global_config.logger_name)
+LOG = logging.getLogger(gconf.LOGGER_NAME)
 
 
 class DataProcessor:
@@ -17,7 +17,6 @@ class DataProcessor:
         self.label_field = data.Field()
 
     def get_data_iterator(self):
-
         train_data_fields = [
             ("ID", self.id_field),
             ("TURN_1", self.turn_1_field),
