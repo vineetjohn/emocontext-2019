@@ -21,6 +21,7 @@ class Options(argparse.Namespace):
         self.train_file_path = None
         self.mode = None
         self.epochs = 1
+        self.model_directory = None
 
 
 def main(args):
@@ -30,7 +31,12 @@ def main(args):
     parser.add_argument("--log-level", type=str)
     parser.add_argument("--train-file-path", type=str, required=True)
     parser.add_argument("--mode", type=Mode, choices=list(Mode), required=True)
-    parser.add_argument("--epochs", type=int)
+
+    if options.mode == Mode.TRAIN:
+        parser.add_argument("--epochs", type=int)
+    elif options.mode == Mode.INFER:
+        parser.add_argument("--model-directory", type=str, required=True)
+
     parser.parse_known_args(args=args, namespace=options)
 
     # Initialize global logger

@@ -20,7 +20,7 @@ class EmotionClassifier(torch.nn.Module):
             bidirectional=True,
         )
         self.lin_1 = torch.nn.Linear(mconf.gru_hidden_dim * 2, num_labels, bias=True)
-        self.softmax = torch.nn.LogSoftmax()
+        self.softmax = torch.nn.LogSoftmax(1)
         self.loss = torch.nn.NLLLoss()
 
     def forward(self, input_seq, input_lengths, hidden=None):
