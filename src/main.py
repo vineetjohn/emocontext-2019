@@ -1,5 +1,6 @@
 import os
 import sys
+import dill
 import logging
 import argparse
 import torch
@@ -24,9 +25,14 @@ class Options(argparse.Namespace):
         self.model_directory = None
 
 
-def train_model(options):
+def train_model(options: Options):
+    # Create directory to save training artifacts
+    if not os.path.exists(gconf.MODEL_SAVE_DIR):
+        os.makedirs(gconf.MODEL_SAVE_DIR)
+    model_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
+
     # Define data pipeline and iterator
-    data_processor = dataset_helper.DataProcessor(options.train_file_path)
+    data_processor = dataset_helper.TrainDataProcessor(options.train_file_path)
     train_iterator = data_processor.get_data_iterator()
 
     # Define word embedder
@@ -36,19 +42,12 @@ def train_model(options):
     )
 
     # Define model
-    model = EmotionClassifier(
-        len(data_processor.label_field.vocab), word_embedding.get_embedder()
-    )
+    model = EmotionClassifier(len(data_processor.label_field.vocab), word_embedding.get_embedder())
 
     # Initialization before training
     train_iterator.init_epoch()
     optimizer = torch.optim.Adam(model.parameters(), lr=mconf.learning_rate)
     optimizer.zero_grad()
-
-    # Create directory to save training artifacts
-    if not os.path.exists(gconf.MODEL_SAVE_DIR):
-        os.makedirs(gconf.MODEL_SAVE_DIR)
-    model_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.MODEL_FILENAME)
 
     # Train model
     for epoch in range(options.epochs):
@@ -67,12 +66,24 @@ def train_model(options):
             optimizer.step()
 
         LOG.info("Saving model to disk ...")
-        torch.save(model.state_dict(), model_save_path)
+        torch.save(obj=model.state_dict(), f=model_save_path, pickle_module=dill)
         LOG.info("Saved model to %s", model_save_path)
 
 
-def infer_emotion(options):
-    pass
+def infer_emotion(options: Options):
+    gconf.MODEL_SAVE_DIR = options.model_directory
+
+    saved_vocab_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_VOCAB_FILENAME)
+    vocab_field = torch.load(f=saved_vocab_path, pickle_module=dill)
+    LOG.info("Loaded vocab")
+
+    saved_label_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_LABEL_FILENAME)
+    label_field = torch.load(f=saved_label_path, pickle_module=dill)
+    LOG.info("Loaded labels")
+
+    saved_model_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_LABEL_FILENAME)
+    model = torch.load(f=saved_model_path, pickle_module=dill)
+    LOG.info("Loaded model")
 
 
 def main(args):

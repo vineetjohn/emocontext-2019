@@ -4,9 +4,7 @@ from src.utils.enums import EmbeddingType
 
 
 class WordEmbedding:
-    def __init__(
-        self, file_path=None, embedding_type=None, vocab_size=None, dimensions=None
-    ):
+    def __init__(self, file_path=None, embedding_type=None, vocab_size=None, dimensions=None):
         self.file_path = file_path
         self.embedding_type = embedding_type
 
