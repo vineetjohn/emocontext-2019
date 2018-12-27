@@ -2,6 +2,8 @@ import dill
 import torch
 import logging
 from torchtext import data
+from torchtext.data import Field
+
 from src.config import global_config as gconf
 from src.config.model_config import mconf
 
@@ -61,13 +63,13 @@ class TrainDataProcessor:
 
 
 class TestDataProcessor:
-    def __init__(self, test_file_path: str):
+    def __init__(self, test_file_path: str, vocab_field: Field):
         self.test_file_path = test_file_path
 
         self.id_field = data.Field()
         self.turn_1_field = data.Field(sequential=True)
         self.turn_2_field = data.Field(sequential=True)
-        self.turn_3_field = data.Field(sequential=True, include_lengths=True)
+        self.turn_3_field = vocab_field
 
     def get_data_iterator(self):
         test_data_fields = [
@@ -86,7 +88,6 @@ class TestDataProcessor:
         self.id_field.build_vocab(test_dataset)
         self.turn_1_field.build_vocab(test_dataset)
         self.turn_2_field.build_vocab(test_dataset)
-        self.turn_3_field.build_vocab(test_dataset)
 
         iterator = data.Iterator(
             dataset=test_dataset,

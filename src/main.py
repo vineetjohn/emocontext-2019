@@ -20,6 +20,7 @@ class Options(argparse.Namespace):
         super().__init__(**kwargs)
         self.log_level = "INFO"
         self.train_file_path = None
+        self.test_file_path = None
         self.mode = None
         self.epochs = 1
         self.model_directory = None
@@ -30,6 +31,7 @@ def train_model(options: Options):
     if not os.path.exists(gconf.MODEL_SAVE_DIR):
         os.makedirs(gconf.MODEL_SAVE_DIR)
     model_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
+    embedding_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_EMBEDDING_FILENAME)
 
     # Define data pipeline and iterator
     data_processor = dataset_helper.TrainDataProcessor(options.train_file_path)
@@ -67,6 +69,7 @@ def train_model(options: Options):
 
         LOG.info("Saving model to disk ...")
         torch.save(obj=model.state_dict(), f=model_save_path, pickle_module=dill)
+        torch.save(obj=model.embedding, f=embedding_save_path, pickle_module=dill)
         LOG.info("Saved model to %s", model_save_path)
 
 
@@ -81,9 +84,36 @@ def infer_emotion(options: Options):
     label_field = torch.load(f=saved_label_path, pickle_module=dill)
     LOG.info("Loaded labels")
 
-    saved_model_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_LABEL_FILENAME)
-    model = torch.load(f=saved_model_path, pickle_module=dill)
+    saved_embedding_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_EMBEDDING_FILENAME)
+    embedding = torch.load(f=saved_embedding_path, pickle_module=dill)
+    LOG.info("Loaded embeddings")
+
+    saved_model_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
+    model = EmotionClassifier(len(label_field.vocab), embedding)
+    model.load_state_dict(torch.load(f=saved_model_path, pickle_module=dill))
+    model.eval()
     LOG.info("Loaded model")
+
+    # Define data pipeline and iterator
+    data_processor = dataset_helper.TestDataProcessor(options.test_file_path, vocab_field)
+    test_iterator = data_processor.get_data_iterator()
+
+    index_predictions = torch.LongTensor([])
+    for i, test_data in enumerate(test_iterator):
+        LOG.info("Predicting samples from index: {}".format(i * mconf.batch_size))
+        class_probs = model(test_data.TURN_3[0], test_data.TURN_3[1])
+        _, predictions = torch.max(class_probs, 1)
+
+        index_predictions = torch.cat([index_predictions, predictions])
+    class_predictions = [label_field.vocab.itos[x] for x in index_predictions]
+
+    if not os.path.exists(gconf.OUTPUT_DIR):
+        os.makedirs(gconf.OUTPUT_DIR)
+    predictions_file_path = os.path.join(gconf.OUTPUT_DIR, gconf.PREDICTIONS_FILENAME)
+    with open(predictions_file_path, 'w') as predictions_file:
+        for prediction in class_predictions:
+            predictions_file.write("{}\n".format(prediction))
+    LOG.info("Predictions written to file {}".format(predictions_file_path))
 
 
 def main(args):
