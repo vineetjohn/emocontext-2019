@@ -1,23 +1,23 @@
-import os
 import sys
+
+import argparse
 import dill
 import logging
-import argparse
+import os
 import torch
-from typing import Any
 
 from src.config import global_config as gconf
 from src.config.model_config import mconf
+from src.models.model import EmotionClassifier
 from src.utils import log_helper, dataset_helper, embedding_helper
 from src.utils.enums import Mode
-from src.models.model import EmotionClassifier
 
 LOG = logging.getLogger()
 
 
 class Options(argparse.Namespace):
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self.log_level = "INFO"
         self.train_file_path = None
         self.test_file_path = None
