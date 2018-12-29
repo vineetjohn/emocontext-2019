@@ -8,7 +8,7 @@ import torch
 
 from src.config import global_config as gconf
 from src.config.model_config import mconf
-from src.models.model import EmotionClassifier
+from src.models.model import EmotionClassifierCNN
 from src.utils import log_helper, dataset_helper, embedding_helper
 from src.utils.enums import Mode
 
@@ -31,7 +31,6 @@ def train_model(options: Options):
     if not os.path.exists(gconf.MODEL_SAVE_DIR):
         os.makedirs(gconf.MODEL_SAVE_DIR)
     model_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
-    embedding_save_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_EMBEDDING_FILENAME)
 
     # Define data pipeline and iterator
     data_processor = dataset_helper.TrainDataProcessor(options.train_file_path)
@@ -44,7 +43,7 @@ def train_model(options: Options):
     )
 
     # Define model
-    model = EmotionClassifier(len(data_processor.label_field.vocab), word_embedding.get_embedder())
+    model = EmotionClassifierCNN(len(data_processor.label_field.vocab), word_embedding.get_embedder())
 
     # Initialization before training
     train_iterator.init_epoch()
@@ -69,7 +68,6 @@ def train_model(options: Options):
 
         LOG.info("Saving model to disk ...")
         torch.save(obj=model.state_dict(), f=model_save_path, pickle_module=dill)
-        torch.save(obj=model.embedding, f=embedding_save_path, pickle_module=dill)
         LOG.info("Saved model to %s", model_save_path)
 
 
@@ -84,12 +82,13 @@ def infer_emotion(options: Options):
     label_field = torch.load(f=saved_label_path, pickle_module=dill)
     LOG.info("Loaded labels")
 
-    saved_embedding_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_EMBEDDING_FILENAME)
-    embedding = torch.load(f=saved_embedding_path, pickle_module=dill)
-    LOG.info("Loaded embeddings")
+    word_embedding = embedding_helper.WordEmbedding(
+        vocab_size=len(vocab_field.vocab),
+        dimensions=gconf.WORD_EMBEDDING_SIZE,
+    )
 
     saved_model_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
-    model = EmotionClassifier(len(label_field.vocab), embedding)
+    model = EmotionClassifierCNN(len(label_field.vocab), word_embedding.get_embedder())
     model.load_state_dict(torch.load(f=saved_model_path, pickle_module=dill))
     model.eval()
     LOG.info("Loaded model")
