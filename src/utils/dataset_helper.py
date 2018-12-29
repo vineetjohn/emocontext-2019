@@ -15,10 +15,10 @@ class TrainDataProcessor:
         self.train_file_path = train_file_path
 
         self.id_field = data.Field()
-        self.turn_1_field = data.Field(sequential=True)
-        self.turn_2_field = data.Field(sequential=True)
-        self.turn_3_field = data.Field(sequential=True, include_lengths=True)
-        self.label_field = data.Field()
+        self.turn_1_field = data.Field()
+        self.turn_2_field = data.Field()
+        self.turn_3_field = data.Field(include_lengths=True)
+        self.label_field = data.Field(sequential=False, is_target=True, unk_token=None, pad_token=None)
 
     def get_data_iterator(self):
         train_data_fields = [

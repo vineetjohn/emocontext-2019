@@ -58,7 +58,7 @@ def train_model(options: Options):
             class_probs = model(train_data.TURN_3[0], train_data.TURN_3[1])
 
             # flattens from [1, batch_size] to [batch_size]
-            labels = train_data.LABEL.reshape((train_data.LABEL.size()[1]))
+            labels = train_data.LABEL
 
             # compute NLL Loss
             loss = torch.nn.functional.cross_entropy(class_probs, labels)
@@ -130,7 +130,6 @@ def main(args):
     elif options.mode == Mode.INFER:
         parser.add_argument("--model-directory", type=str, required=True)
         parser.add_argument("--test-file-path", type=str, required=True)
-        parser.add_argument("--predictions-save-path", type=str, required=True)
 
     parser.parse_known_args(args=args, namespace=options)
 
