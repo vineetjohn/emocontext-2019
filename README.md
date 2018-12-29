@@ -14,8 +14,7 @@ pip install -r requirements.txt
 ### Train model
 ```bash
 ./scripts/run.sh \
---mode TRAIN 
---log-level "DEBUG"
+--mode TRAIN \
 --train-file-path data/raw/train.txt \
 --epochs ${NUM_EPOCHS}
 ```
@@ -28,7 +27,6 @@ This folder path should be used as the `${MODEL_SAVE_DIRECTORY}` variable for in
 ```bash
 ./scripts/run.sh \
 --mode INFER \
---log-level "DEBUG" \
 --test-file-path data/raw/devwithoutlabels.txt \
 --model-directory ${MODEL_SAVE_DIRECTORY}
 ```
