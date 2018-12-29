@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 
 This will produce a folder like `models/yyyymmddhhmmss`.
-This folder path should be used as the ${MODEL_SAVE_DIRECTORY} variable for inference.
+This folder path should be used as the `${MODEL_SAVE_DIRECTORY}` variable for inference.
 
 
 ### Infer emotion
