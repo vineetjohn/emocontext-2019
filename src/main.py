@@ -8,7 +8,7 @@ import torch
 
 from src.config import global_config as gconf
 from src.config.model_config import mconf
-from src.models.model import EmotionClassifierCNN
+from src.models.model import EmotionClassifierRNN
 from src.utils import log_helper, dataset_helper, embedding_helper
 from src.utils.enums import Mode
 
@@ -43,7 +43,7 @@ def train_model(options: Options):
     )
 
     # Define model
-    model = EmotionClassifierCNN(len(data_processor.label_field.vocab), word_embedding.get_embedder())
+    model = EmotionClassifierRNN(len(data_processor.label_field.vocab), word_embedding.get_embedder())
 
     # Initialization before training
     train_iterator.init_epoch()
@@ -88,7 +88,7 @@ def infer_emotion(options: Options):
     )
 
     saved_model_path = os.path.join(gconf.MODEL_SAVE_DIR, gconf.SAVED_MODEL_FILENAME)
-    model = EmotionClassifierCNN(len(label_field.vocab), word_embedding.get_embedder())
+    model = EmotionClassifierRNN(len(label_field.vocab), word_embedding.get_embedder())
     model.load_state_dict(torch.load(f=saved_model_path, pickle_module=dill))
     model.eval()
     LOG.info("Loaded model")
