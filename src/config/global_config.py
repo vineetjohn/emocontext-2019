@@ -5,9 +5,9 @@ LOGGER_NAME = "emocontext"
 WORD_EMBEDDING_SIZE = 100
 MODEL_SAVE_DIR = "./models/{}/".format(EXPERIMENT_TIMESTAMP)
 
-SAVED_MODEL_FILENAME = "classifier"
-SAVED_VOCAB_FILENAME = "vocab"
-SAVED_LABEL_FILENAME = "label"
+SAVED_MODEL_FILENAME = "classifier.dill"
+SAVED_VOCAB_FILENAME = "vocab.dill"
+SAVED_LABEL_FILENAME = "label.dill"
 
 OUTPUT_DIR = "./output/{}/".format(EXPERIMENT_TIMESTAMP)
-PREDICTIONS_FILENAME = "predictions.txt"
+PREDICTIONS_FILENAME = "predictions.tsv"
