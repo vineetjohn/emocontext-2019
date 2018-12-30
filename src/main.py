@@ -109,9 +109,10 @@ def infer_emotion(options: Options):
     if not os.path.exists(gconf.OUTPUT_DIR):
         os.makedirs(gconf.OUTPUT_DIR)
     predictions_file_path = os.path.join(gconf.OUTPUT_DIR, gconf.PREDICTIONS_FILENAME)
-    with open(predictions_file_path, 'w') as predictions_file:
-        for prediction in class_predictions:
-            predictions_file.write("{}\n".format(prediction))
+    predictions_column = ['label'] + class_predictions
+    with open(predictions_file_path, 'w') as predictions_file, open(options.test_file_path, 'r') as test_file:
+        for test_sample, prediction in zip(test_file, predictions_column):
+            predictions_file.write("{}\t{}\n".format(test_sample.strip(), prediction))
     LOG.info("Predictions written to file {}".format(predictions_file_path))
 
 
